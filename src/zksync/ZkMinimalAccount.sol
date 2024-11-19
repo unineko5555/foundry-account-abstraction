@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.24;
+pragma solidity 0.8.24;
 
 // zksync era Imports
 import { IAccount, ACCOUNT_VALIDATION_SUCCESS_MAGIC } from "lib/foundry-era-contracts/src/system-contracts/contracts/interfaces/IAccount.sol";
@@ -43,6 +43,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
     error ZkMinimalAccount__ExecutionFailed();
     error ZkMinimalAccount__NotFromBootLoaderOrOwner();
     error ZkMinimalAccount__FailedToPay();
+    error ZkMinimalAccount__InvalidSignature();
 
     /*//////////////////////////////////////////////////////////////
                                MODIFIERS
@@ -89,11 +90,19 @@ contract ZkMinimalAccount is IAccount, Ownable {
         _executeTransaction(_transaction);
     }
 
-    function executeTransactionFromOutside(Transaction memory _transaction) 
-        external 
-        payable 
-    {
-        _validateTransaction(_transaction);    
+    // function executeTransactionFromOutside(Transaction memory _transaction) 
+    //     external 
+    //     payable 
+    // {
+    //     _validateTransaction(_transaction);    
+    //     _executeTransaction(_transaction);
+    // }
+    // hardhatを使うため
+    function executeTransactionFromOutside(Transaction memory _transaction) external payable {
+        bytes4 magic = _validateTransaction(_transaction);
+        if (magic != ACCOUNT_VALIDATION_SUCCESS_MAGIC) {
+            revert ZkMinimalAccount__InvalidSignature();
+        }
         _executeTransaction(_transaction);
     }
 
@@ -133,13 +142,13 @@ contract ZkMinimalAccount is IAccount, Ownable {
 
         // Check the signature
         bytes32 txHash = _transaction.encodeHash();
-        // bytes32 convertedHash = MessageHashUtils.toEthSignedMessageHash(txHash);
+        // bytes32 convertedHash = MessageHashUtils.toEthSignedMessageHash(txHash); //MemoryTransactionHelper.solにすでにあるので不要
         address signer = ECDSA.recover(txHash, _transaction.signature);
         bool isValidSigner = signer == owner();
         if (isValidSigner) {
             magic = ACCOUNT_VALIDATION_SUCCESS_MAGIC;
         } else {
-            magic = bytes4(0);
+            magic = bytes4(0);s
         }
         return magic;
     }
