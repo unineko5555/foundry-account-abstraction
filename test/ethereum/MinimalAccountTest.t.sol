@@ -9,14 +9,15 @@ import { ERC20Mock } from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 import {SendPackedUserOp, PackedUserOperation, IEntryPoint } from "script/SendPackedUserOp.s.sol";
 import { ECDSA } from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
+// import { ZkSyncChainChecker } from "lib/account-abstraction/contracts/core/ZkSyncChainChecker.sol";
 
-contract MinimalAccountTest is Test { // ZkSyncChainChecker
-    using MessageHashUtils for bytes32;
+contract MinimalAccountTest is Test { //ZkSyncChainChecker 
+    using MessageHashUtils for bytes32; //MessageHashUtilsライブラリの関数をbytes32型で直接呼び出せるようになる、messageHash.toEthSignedMessageHash()のような記法が可能
 
-    HelperConfig helperConfig;
-    MinimalAccount minimalAccount;
-    ERC20Mock usdc;
-    SendPackedUserOp sendPackedUserOp;
+    HelperConfig public helperConfig;
+    MinimalAccount public minimalAccount;
+    ERC20Mock public usdc;
+    SendPackedUserOp public sendPackedUserOp;
 
     uint256 constant AMOUNT = 1e18;
     address randomuser = makeAddr("randomUser");
@@ -39,10 +40,10 @@ contract MinimalAccountTest is Test { // ZkSyncChainChecker
         assertEq(usdc.balanceOf(address(minimalAccount)), 0);
         address dest = address(usdc);
         uint256 value = 0;
-        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT);
+        bytes memory functionData = abi.encodeWithSelector(ERC20Mock.mint.selector, address(minimalAccount), AMOUNT); //AMOUNTをmintする準備
         //Act
         vm.prank(minimalAccount.owner());
-        minimalAccount.execute(dest, value, functionData);
+        minimalAccount.execute(dest, value, functionData); //ここでmintされる
         //Assert
         assertEq(usdc.balanceOf(address(minimalAccount)), AMOUNT);
     }
@@ -102,7 +103,7 @@ contract MinimalAccountTest is Test { // ZkSyncChainChecker
         bytes memory executeCallData = abi.encodeWithSelector(MinimalAccount.execute.selector, dest, value, functionData);
         PackedUserOperation memory packedUserOp = sendPackedUserOp.generateSignedUserOperation(executeCallData, helperConfig.getConfig(), address(minimalAccount));
         // bytes32 userOperationHash = IEntryPoint(helperConfig.getConfig().entryPoint).getUserOpHash(packedUserOp); // Because inside of handle user ops
-        vm.deal(address(minimalAccount), 1e18);
+        vm.deal(address(minimalAccount), 1e18); //missingAccountFundsをalt-mempoolが最初にカバーした分をこここで返済する
 
         PackedUserOperation[] memory ops = new PackedUserOperation[](1);
         ops[0] = packedUserOp;

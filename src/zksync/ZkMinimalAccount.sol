@@ -148,7 +148,7 @@ contract ZkMinimalAccount is IAccount, Ownable {
         if (isValidSigner) {
             magic = ACCOUNT_VALIDATION_SUCCESS_MAGIC;
         } else {
-            magic = bytes4(0);s
+            magic = bytes4(0);
         }
         return magic;
     }

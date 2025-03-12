@@ -46,7 +46,7 @@ contract MinimalAccount is IAccount, Ownable {
         i_entryPoint = IEntryPoint(entryPoint);
     }
 
-    receive() external payable {} //特殊な関数、accept fundするために必要
+    receive() external payable {} //特殊な関数、accept fundするために必要。constructor直下にないといけない
 
     /*//////////////////////////////////////////////////////////////
                            EXTERNAL FUNCTIONS
@@ -61,18 +61,19 @@ contract MinimalAccount is IAccount, Ownable {
     // A signature is valid, if it's the MinimalAccount owner
     function validateUserOp(PackedUserOperation calldata userOp, bytes32 userOpHash, uint256 missingAccountFunds)
         external
-        requireFromEntryPoint
+        requireFromEntryPoint /** EntrypointからのみvalidateUserOpは呼び出せる */
         returns (uint256 validationData)
     {
         validationData = _validateSignature(userOp, userOpHash);
-        // _validateNonce()
-        _payPrefund(missingAccountFunds);
+        // _validateNonce()  //Entry pointでnonceをチェックするのでここでは不要
+        _payPrefund(missingAccountFunds); //pay Entrypoint amount owed
     }
 
     /*//////////////////////////////////////////////////////////////
-                           EXTERNAL FUNCTIONS
+                           INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
     //EIP-191 version of the signed hash
+    //この関数をカスタマイすしてGoogle session keyなどで署名可能にできる
     function _validateSignature(PackedUserOperation calldata userOp, bytes32 userOpHash)
         internal
         view

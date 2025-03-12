@@ -11,7 +11,7 @@ contract HelperConfig is Script {
 
     struct NetworkConfig {
         address entryPoint;
-        address account;
+        address account; //MinimalAccountのaddress, smart walletのaddress
     }
 
     uint256 constant ETH_SEPOLIA_CHAIN_ID = 11155111;
@@ -37,7 +37,7 @@ contract HelperConfig is Script {
         if (chainId == LOCAL_CHAIN_ID) {
             return getOrCreateAnvilEthConfig();
         } else if (networkConfigs[chainId].account != address(0)) { // account→entryPoint
-            return networkConfigs[chainId];
+            return networkConfigs[chainId]; 
         } else {
             revert HelperConfig__InvalidChainId();
         }
@@ -45,7 +45,7 @@ contract HelperConfig is Script {
 
     function getEthSepoliaConfig() public pure returns (NetworkConfig memory) {
         return NetworkConfig({
-            entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789,
+            entryPoint: 0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789, // EntryPointのaddressはチェーンは違ってもEVMでは同じ??
             account: BURNER_WALLET
         });
     }
@@ -67,8 +67,17 @@ contract HelperConfig is Script {
         EntryPoint entryPoint = new EntryPoint();
         vm.stopBroadcast();
 
-        localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), account: ANVIL_DEFAULT_ACCOUNT});
-        // localNetworkConfig = NetworkConfig({entryPoint: address(entryPoint), usdc: address(ERC20Mock), account: ANVIL_DEFAULT_ACCOUNT});
+        localNetworkConfig = NetworkConfig({
+            entryPoint: address(entryPoint), 
+            account: ANVIL_DEFAULT_ACCOUNT
+        });
+
+        // localNetworkConfig = NetworkConfig({ //テキストではこうなっているるが、これはエラーになる
+        //     entryPoint: address(entryPoint), 
+        //     usdc: address(ERC20Mock), 
+        //     account: ANVIL_DEFAULT_ACCOUNT
+        // });
+
         return localNetworkConfig;
 
     }

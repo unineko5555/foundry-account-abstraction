@@ -42,12 +42,13 @@ contract SendPackedUserOp is Script {
         // Send transaction
         vm.startBroadcast();
         IEntryPoint(helperConfig.getConfig().entryPoint).handleOps(
-            ops,
-            payable(helperConfig.getConfig().account)
+            ops, //署名つきのUserOperation
+            payable(helperConfig.getConfig().account) //accountはbeneficiary:受益者
         );
         vm.stopBroadcast();
     }
 
+    //UserOperationを生成し、署名する関数
     function generateSignedUserOperation(bytes memory callData, HelperConfig.NetworkConfig memory config, address minimalAccount)
         public view returns (PackedUserOperation memory userOp) 
     {
@@ -55,8 +56,8 @@ contract SendPackedUserOp is Script {
         uint256 nonce = vm.getNonce(minimalAccount) - 1; // config.account → minimalAccount, 最後に成功したトランザクション
         userOp = _generateUnsignedUserOperation(callData, minimalAccount, nonce); // unsignedUserOp = userOp, config.account → minimalAccount
         // Step 2. Sign and return it
-        bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp);
-        bytes32 digest = userOpHash.toEthSignedMessageHash();
+        bytes32 userOpHash = IEntryPoint(config.entryPoint).getUserOpHash(userOp); //userOpのハッシュ
+        bytes32 digest = userOpHash.toEthSignedMessageHash(); //eth_signのメッセージハッシュ
         // 3. Sign it
         uint8 v;
         bytes32 r;
@@ -65,9 +66,9 @@ contract SendPackedUserOp is Script {
         if (block.chainid == 31337) {
             (v, r, s) = vm.sign(ANVIL_DEFAULT_KEY, digest);
         } else {
-            (v, r, s) = vm.sign(config.account, digest);
+            (v, r, s) = vm.sign(config.account, digest); //digest を config.account の秘密鍵で署名し、署名の v, r, s の3つの値を取得する処理
         }
-        userOp.signature = abi.encodePacked(r, s, v); // Note the order
+        userOp.signature = abi.encodePacked(r, s, v); // Note: the order
         return userOp;
     }
 
