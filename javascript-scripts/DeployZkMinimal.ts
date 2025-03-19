@@ -1,4 +1,7 @@
-import * as fs from "fs-extra"
+// import { readFileSync } from "fs-extra"
+// import * as fs from "fs-extra"
+import pkg from 'fs-extra';
+const { readFileSync } = pkg;
 import { utils, Wallet, Provider, EIP712Signer, types, Contract, ContractFactory } from "zksync-ethers"
 import * as ethers from "ethers"
 import "dotenv/config"
@@ -9,12 +12,16 @@ async function main() {
     // let wallet = new Wallet(process.env.PRIVATE_KEY!)
 
     // Sepolia - uncomment to use
-    let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!)
-    const encryptedJson = fs.readFileSync(".encryptedKey.json", "utf8")
-    let wallet = Wallet.fromEncryptedJsonSync(
-        encryptedJson,
-        process.env.PRIVATE_KEY_PASSWORD!
-    )
+    //暗号化キーを使わずに直接秘密鍵を使う場合
+    let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!);
+    let wallet = new Wallet(process.env.PRIVATE_KEY!);
+
+    // let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!)
+    // const encryptedJson = readFileSync(".encryptedKey.json", "utf8")
+    // let wallet = Wallet.fromEncryptedJsonSync(
+    //     encryptedJson,
+    //     process.env.PRIVATE_KEY_PASSWORD!
+    // )
 
     // // Mainnet - uncomment to use
     // let provider = new Provider(process.env.ZKSYNC_RPC_URL!)
@@ -26,8 +33,8 @@ async function main() {
 
     wallet = wallet.connect(provider)
     console.log(`Working with wallet: ${await wallet.getAddress()}`)
-    const abi = JSON.parse(fs.readFileSync("./out/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["abi"]
-    const bytecode = JSON.parse(fs.readFileSync("./zkout/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["bytecode"]["object"]
+    const abi = JSON.parse(readFileSync("./out/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["abi"]
+    const bytecode = JSON.parse(readFileSync("./zkout/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["bytecode"]["object"]
 
     const factoryDeps = [bytecode] // We can skip this, but this is what's happening 
     const zkMinimalAccountFactory = new ContractFactory<any[], Contract>(

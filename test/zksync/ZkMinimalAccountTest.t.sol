@@ -12,8 +12,8 @@ import { ACCOUNT_VALIDATION_SUCCESS_MAGIC } from "lib/foundry-era-contracts/src/
 import { MessageHashUtils } from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 
 contract ZkMinimalAccountTest is Test {
-    ZkMinimalAccount minimalAccount;    
-    ERC20Mock usdc;
+    ZkMinimalAccount public minimalAccount;    
+    ERC20Mock public usdc;
 
     uint256 constant AMOUNT = 1e18;
     bytes32 constant EMPTY_BYTES32 = bytes32(0);
@@ -25,7 +25,8 @@ contract ZkMinimalAccountTest is Test {
         usdc = new ERC20Mock(); 
         vm.deal(address(minimalAccount), AMOUNT);
     }
-
+    
+    // test pass!!
     function testZkOwnerCanExecuteCommands() public {
         // Arrange
         address dest = address(usdc);

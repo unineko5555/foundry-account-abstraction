@@ -1,4 +1,6 @@
-import * as fs from "fs-extra"
+// import * as fs from "fs-extra"
+import pkg from 'fs-extra';
+const { readFileSync } = pkg;
 import { utils, Wallet, Provider, EIP712Signer, types, Contract, ContractFactory } from "zksync-ethers"
 import * as ethers from "ethers"
 import "dotenv/config"
@@ -7,11 +9,11 @@ import "dotenv/config"
 // const ZK_MINIMAL_ADDRESS = ""
 
 // Sepolia
-// const ZK_MINIMAL_ADDRESS = ""
+const ZK_MINIMAL_ADDRESS = "0x5b8871A1aA8CECf483FAc1dF0513799B0C60A1f6"
 
 // Local
 // Update this!
-const ZK_MINIMAL_ADDRESS = "0x19a519025994A1F32188dE1F0E11014A791fB358"
+// const ZK_MINIMAL_ADDRESS = "0x19a519025994A1F32188dE1F0E11014A791fB358"
 
 // Update this too!
 const RANDOM_APPROVER = "0x9EA9b0cc1919def1A3CfAEF4F7A66eE3c36F86fC"
@@ -33,13 +35,17 @@ async function main() {
     // let provider = new Provider("http://127.0.0.1:8011")
     // let wallet = new Wallet(process.env.PRIVATE_KEY!)
 
-    // // Sepolia - Uncomment to use
-    let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!)
-    const encryptedJson = fs.readFileSync(".encryptedKey.json", "utf8")
-    let wallet = Wallet.fromEncryptedJsonSync(
-        encryptedJson,
-        process.env.PRIVATE_KEY_PASSWORD!
-    )
+    // Sepolia - Uncomment to use
+    //暗号化キーを使わずに直接秘密鍵を使う場合
+    let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!);
+    let wallet = new Wallet(process.env.PRIVATE_KEY!);
+
+    // let provider = new Provider(process.env.ZKSYNC_SEPOLIA_RPC_URL!)
+    // const encryptedJson = readFileSync(".encryptedKey.json", "utf8")
+    // let wallet = Wallet.fromEncryptedJsonSync(
+    //     encryptedJson,
+    //     process.env.PRIVATE_KEY_PASSWORD!
+    // )
 
     // // Mainnet - Uncomment to use
     // let provider = new Provider(process.env.ZKSYNC_RPC_URL!)
@@ -51,13 +57,13 @@ async function main() {
 
     wallet = wallet.connect(provider)
 
-    const abi = JSON.parse(fs.readFileSync("./out/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["abi"]
+    const abi = JSON.parse(readFileSync("./out/ZkMinimalAccount.sol/ZkMinimalAccount.json", "utf8"))["abi"]
     console.log("Setting up contract details...")
     const zkMinimalAccount = new Contract(ZK_MINIMAL_ADDRESS, abi, provider)
 
     // If this doesn't log the owner, you have an issue!
     console.log(`The owner of this minimal account is: `, await zkMinimalAccount.owner())
-    const usdcAbi = JSON.parse(fs.readFileSync("./out/ERC20/IERC20.sol/IERC20.json", "utf8"))["abi"]
+    const usdcAbi = JSON.parse(readFileSync("./out/ERC20/IERC20.sol/IERC20.json", "utf8"))["abi"]
     const usdcContract = new Contract(USDC_ZKSYNC, usdcAbi, provider)
 
     console.log("Populating transaction...")

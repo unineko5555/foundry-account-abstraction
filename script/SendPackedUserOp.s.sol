@@ -20,7 +20,7 @@ contract SendPackedUserOp is Script {
 
         bytes memory functionData = abi.encodeWithSelector(
             IERC20.approve.selector,
-            0x9EA9b0cc1919def1A3CfAEF4F7A66eE3c36F86fC,
+            0xCd77572F2301b68B8340cb447bB2D233439EAC1C, //my wallet
             1e18
         );
 
@@ -34,7 +34,7 @@ contract SendPackedUserOp is Script {
         PackedUserOperation memory userOp = generateSignedUserOperation(
             executeCalldata,
             helperConfig.getConfig(),
-            0x03Ad95a54f02A40180D45D76789C448024145aaF
+            0x03Ad95a54f02A40180D45D76789C448024145aaF // MinimalAccountのaddressを記入する(これは違う),実際にDeployMinimalをdeolyしてMinimalAccountのaddressを記入する
         );
         PackedUserOperation[] memory ops = new PackedUserOperation[](1); // サイズ1の配列
         ops[0] = userOp;
